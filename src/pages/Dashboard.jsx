@@ -119,6 +119,8 @@ export default function Dashboard() {
         submittedAt: Timestamp.now(),
         reviewedAt:  null,
         adminNote:   '',
+        votes:       0,
+        judgeScore:  0,
       })
       // onSnapshot will replace the optimistic entry with the real doc automatically
     } catch (err) {

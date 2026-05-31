@@ -10,6 +10,7 @@ const NAV = [
   { label: 'Prizes',      path: '/prizes' },
   { label: 'Terms',       path: '/terms' },
   { label: 'Contact',     path: '/contact' },
+  { label: 'Vote',        path: '/vote' },
 ]
 
 export default function Navbar() {

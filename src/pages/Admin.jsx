@@ -25,38 +25,53 @@ export default function Admin() {
   const [adminNote,  setAdminNote]  = useState('')
   const [updating,   setUpdating]   = useState(false)
   const [expanded,   setExpanded]   = useState(null)
+  const [judgeScore, setJudgeScore] = useState('')
 
   // Guard — only admin
   useEffect(() => {
     if (!user) { navigate('/'); return }
     if (!isAdmin) { navigate('/'); return }
-  }, [user, isAdmin])
+  }, [user, isAdmin, navigate])
 
   // Real-time all poems
   useEffect(() => {
     if (!isAdmin) return
     const q = query(collection(db, 'poems'), orderBy('submittedAt', 'desc'))
-    const unsub = onSnapshot(q, snap => {
-      setPoems(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setLoading(false)
-    })
+    const unsub = onSnapshot(
+      q,
+      snap => {
+        setPoems(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+        setLoading(false)
+      },
+      err => {
+        console.error('Admin snapshot error:', err.code, err.message)
+        setLoading(false)
+      }
+    )
     return () => unsub()
   }, [isAdmin])
 
   const updateStatus = async (poemId, status) => {
     setUpdating(true)
     try {
-      await updateDoc(doc(db, 'poems', poemId), {
+      const updateData = {
         status,
         adminNote:  adminNote.trim(),
         reviewedAt: Timestamp.now(),
-      })
+      }
+      if (judgeScore !== '' && !isNaN(Number(judgeScore))) {
+        const score = Math.min(100, Math.max(0, Number(judgeScore)))
+        updateData.judgeScore = score
+      }
+      await updateDoc(doc(db, 'poems', poemId), updateData)
       setSelected(null)
       setAdminNote('')
+      setJudgeScore('')
     } catch (err) {
       alert('Update failed: ' + err.message)
+    } finally {
+      setUpdating(false)
     }
-    setUpdating(false)
   }
 
   const filtered = poems
@@ -225,14 +240,27 @@ export default function Admin() {
                       <p className="font-accent text-xs tracking-widest mb-3" style={{ color: '#c9a84c' }}>
                         REVIEWING: "{poem.title}"
                       </p>
-                      <div className="mb-4">
-                        <label className="label-gold">Note to Poet (optional — shown if rejected)</label>
-                        <textarea className="input-gold" rows={3}
-                          placeholder="e.g. Thank you for submitting. Unfortunately this entry did not meet our criteria this time..."
-                          value={adminNote}
-                          onChange={e => setAdminNote(e.target.value)}
-                          style={{ resize: 'vertical' }}
-                        />
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="label-gold">Note to Poet (optional)</label>
+                          <textarea className="input-gold" rows={3}
+                            placeholder="e.g. Thank you for submitting..."
+                            value={adminNote}
+                            onChange={e => setAdminNote(e.target.value)}
+                            style={{ resize: 'vertical' }}
+                          />
+                        </div>
+                        <div>
+                          <label className="label-gold">Judge Score (0–100)</label>
+                          <input className="input-gold" type="number" min="0" max="100"
+                            placeholder="e.g. 85"
+                            value={judgeScore}
+                            onChange={e => setJudgeScore(e.target.value)}
+                          />
+                          <p style={{ fontFamily:'EB Garamond,serif', fontSize:12, color:'rgba(232,213,163,0.3)', marginTop:6 }}>
+                            Counts as 70% of final score
+                          </p>
+                        </div>
                       </div>
                       <div className="flex gap-3 flex-wrap">
                         <button

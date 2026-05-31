@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { auth, db, provider, ADMIN_EMAIL } from '../firebase/config'
+import { auth, db, provider, ADMIN_EMAILS } from '../firebase/config'
 
 const AuthContext = createContext(null)
 
@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser)
-        setIsAdmin(firebaseUser.email === ADMIN_EMAIL)
+        setIsAdmin(ADMIN_EMAILS.includes(firebaseUser.email))
         setLoading(false) // unblock UI immediately
 
         // Save/update user record in Firestore (background — non-blocking)

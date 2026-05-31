@@ -5,6 +5,7 @@ import Footer from './components/Footer.jsx'
 import { Home, About, Competition, Prizes, Terms, Contact } from './pages/PublicPages.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Admin from './pages/Admin.jsx'
+import Voting from './pages/VotingPage.jsx'
 
 // Protected route — must be logged in
 function PrivateRoute({ children }) {
@@ -54,6 +55,8 @@ function AppRoutes() {
       <Route path="/prizes"      element={<Layout><Prizes /></Layout>} />
       <Route path="/terms"       element={<Layout><Terms /></Layout>} />
       <Route path="/contact"     element={<Layout><Contact /></Layout>} />
+
+      <Route path="/vote" element={<Layout><Voting /></Layout>} />
 
       {/* Protected */}
       <Route path="/dashboard" element={

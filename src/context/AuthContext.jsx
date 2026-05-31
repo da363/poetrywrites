@@ -1,20 +1,21 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { auth, db, provider, ADMIN_EMAILS } from '../firebase/config'
+import { auth, db, provider, ADMIN_EMAIL } from '../firebase/config'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [user,            setUser]            = useState(null)
+  const [isAdmin,         setIsAdmin]         = useState(false)
+  const [loading,         setLoading]         = useState(true)
+  const [profileComplete, setProfileComplete] = useState(false)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser)
-        setIsAdmin(ADMIN_EMAILS.includes(firebaseUser.email))
+        setIsAdmin(firebaseUser.email === ADMIN_EMAIL)
         setLoading(false) // unblock UI immediately
 
         // Save/update user record in Firestore (background — non-blocking)
@@ -22,12 +23,16 @@ export function AuthProvider({ children }) {
         getDoc(ref).then(snap => {
           if (!snap.exists()) {
             setDoc(ref, {
-              uid:         firebaseUser.uid,
-              email:       firebaseUser.email,
-              displayName: firebaseUser.displayName,
-              photoURL:    firebaseUser.photoURL,
-              joinedAt:    new Date().toISOString(),
+              uid:             firebaseUser.uid,
+              email:           firebaseUser.email,
+              displayName:     firebaseUser.displayName,
+              photoURL:        firebaseUser.photoURL,
+              joinedAt:        new Date().toISOString(),
+              profileComplete: false,
             })
+            setProfileComplete(false)
+          } else {
+            setProfileComplete(snap.data().profileComplete || false)
           }
         }).catch(err => console.error('User record sync error:', err))
       } else {
@@ -56,7 +61,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, profileComplete, signInWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   )

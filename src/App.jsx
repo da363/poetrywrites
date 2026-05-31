@@ -6,12 +6,14 @@ import { Home, About, Competition, Prizes, Terms, Contact } from './pages/Public
 import Dashboard from './pages/Dashboard.jsx'
 import Admin from './pages/Admin.jsx'
 import Voting from './pages/VotingPage.jsx'
+import SignupPage from './pages/SignupPage.jsx'
 
-// Protected route — must be logged in
+// Protected route — must be logged in + profile complete
 function PrivateRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, loading, profileComplete } = useAuth()
   if (loading) return <LoadingScreen />
   if (!user) return <Navigate to="/" replace />
+  if (!profileComplete) return <Navigate to="/signup" replace />
   return children
 }
 
@@ -56,7 +58,8 @@ function AppRoutes() {
       <Route path="/terms"       element={<Layout><Terms /></Layout>} />
       <Route path="/contact"     element={<Layout><Contact /></Layout>} />
 
-      <Route path="/vote" element={<Layout><Voting /></Layout>} />
+      <Route path="/vote"   element={<Layout><Voting /></Layout>} />
+      <Route path="/signup" element={<SignupPage />} />
 
       {/* Protected */}
       <Route path="/dashboard" element={

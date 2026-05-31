@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 
 const CLOUDINARY_CLOUD  = 'dhrwq9jyj'
@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import logoImg from '../assets/logo.jpg'
 
 export default function SignupPage() {
-  const { user, signInWithGoogle, loading } = useAuth()
+  const { user, signInWithGoogle, loading, markProfileComplete } = useAuth()
   const navigate = useNavigate()
 
   const [step,        setStep]        = useState(1) // 1 = sign in, 2 = complete profile
@@ -25,15 +25,8 @@ export default function SignupPage() {
   useEffect(() => {
     if (loading) return
     if (user) {
-      // Check if profile already complete
-      getDoc(doc(db, 'users', user.uid)).then(snap => {
-        if (snap.exists() && snap.data().profileComplete) {
-          navigate('/dashboard', { replace: true })
-        } else {
-          setStep(2)
-          setName(user.displayName || '')
-        }
-      })
+      setStep(2)
+      setName(prev => prev || user.displayName || '')
     }
   }, [user, loading, navigate])
 
@@ -83,6 +76,7 @@ export default function SignupPage() {
         profileComplete: true,
       }, { merge: true })
 
+      markProfileComplete()
       navigate('/dashboard', { replace: true })
     } catch (err) {
       console.error(err)

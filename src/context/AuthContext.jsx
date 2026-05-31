@@ -15,14 +15,14 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser)
-        setIsAdmin(firebaseUser.email === ADMIN_EMAIL)
-        setLoading(false) // unblock UI immediately
+        setIsAdmin(ADMIN_EMAILS.includes(firebaseUser.email))
 
-        // Save/update user record in Firestore (background — non-blocking)
-        const ref = doc(db, 'users', firebaseUser.uid)
-        getDoc(ref).then(snap => {
+        // Always check Firestore for profileComplete before unblocking UI
+        try {
+          const ref  = doc(db, 'users', firebaseUser.uid)
+          const snap = await getDoc(ref)
           if (!snap.exists()) {
-            setDoc(ref, {
+            await setDoc(ref, {
               uid:             firebaseUser.uid,
               email:           firebaseUser.email,
               displayName:     firebaseUser.displayName,
@@ -32,17 +32,24 @@ export function AuthProvider({ children }) {
             })
             setProfileComplete(false)
           } else {
-            setProfileComplete(snap.data().profileComplete || false)
+            setProfileComplete(snap.data().profileComplete === true)
           }
-        }).catch(err => console.error('User record sync error:', err))
+        } catch (err) {
+          console.error('User record sync error:', err)
+          setProfileComplete(false)
+        }
       } else {
         setUser(null)
         setIsAdmin(false)
-        setLoading(false)
+        setProfileComplete(false)
       }
+      setLoading(false)
     })
     return () => unsub()
   }, [])
+
+  // Call this after profile is saved so rest of app updates instantly
+  const markProfileComplete = () => setProfileComplete(true)
 
   const signInWithGoogle = async () => {
     try {
@@ -55,13 +62,14 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await signOut(auth)
+      setProfileComplete(false)
     } catch (err) {
       console.error('Sign-out error:', err)
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading, profileComplete, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, profileComplete, markProfileComplete, signInWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   )

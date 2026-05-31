@@ -33,4 +33,4 @@ export const db = getFirestore(app)
 export const provider = new GoogleAuthProvider()
 
 // Admin email — only this account gets admin access
-export const ADMIN_EMAILS = ['davidbabak14@gmail.com', 'secondadmin@gmail.com']
+export const ADMIN_EMAILS = ['davidbabak14@gmail.com', 'alumnzube4@gmail.com']

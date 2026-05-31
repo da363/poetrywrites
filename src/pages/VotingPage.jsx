@@ -6,9 +6,9 @@ import { useAuth } from '../context/AuthContext'
 const VOTENAIJA_LINK = 'https://poetrywrites-test-run.votenaija.ng'
 
 const PACKAGES = [
-  { id: 'bronze', label: 'Bronze', votes: 5,  amount: 500,  color: '#CD7F32', glow: 'rgba(205,127,50,0.3)',  icon: '🥉' },
-  { id: 'silver', label: 'Silver', votes: 15, amount: 1500, color: '#C0C0C0', glow: 'rgba(192,192,192,0.3)', icon: '🥈' },
-  { id: 'gold',   label: 'Gold',   votes: 50, amount: 5000, color: '#FFD700', glow: 'rgba(255,215,0,0.4)',   icon: '🥇' },
+  { id: 'bronze', label: 'Bronze', votes: 10,  amount: 500,  color: '#CD7F32', glow: 'rgba(205,127,50,0.3)',  icon: '🥉' },
+  { id: 'silver', label: 'Silver', votes: 30,  amount: 1500, color: '#C0C0C0', glow: 'rgba(192,192,192,0.3)', icon: '🥈' },
+  { id: 'gold',   label: 'Gold',   votes: 100, amount: 5000, color: '#FFD700', glow: 'rgba(255,215,0,0.4)',   icon: '🥇' },
 ]
 
 function useReveal() {

@@ -86,7 +86,7 @@ export default function VotingPage() {
           {/* VoteNaija CTA */}
           <a href={VOTENAIJA_LINK} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
             <button className="btn-gold magnetic" style={{ fontSize: 12, padding: '14px 40px' }}>
-              🗳 Vote on VoteNaija
+              🗳 Vote
             </button>
           </a>
         </div>

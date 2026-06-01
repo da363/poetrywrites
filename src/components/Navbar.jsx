@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebase/config'
 import { useAuth } from '../context/AuthContext'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebase/config'
+import { useState, useEffect } from 'react'
 import logoImg from '../assets/logo.jpg'
 
 const NAV = [
@@ -14,8 +19,9 @@ const NAV = [
 ]
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled,     setScrolled]     = useState(false)
+  const [menuOpen,     setMenuOpen]     = useState(false)
+  const [profilePhoto, setProfilePhoto] = useState(null)
   const { user, isAdmin, signInWithGoogle, logout } = useAuth()
   const location = useLocation()
 
@@ -25,7 +31,21 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
+  useEffect(() => {
+    if (!user) { setProfilePhoto(null); return }
+    getDoc(doc(db, 'users', user.uid)).then(snap => {
+      if (snap.exists() && snap.data().photoURL) setProfilePhoto(snap.data().photoURL)
+    })
+  }, [user])
+
   useEffect(() => { setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }, [location.pathname])
+
+  useEffect(() => {
+    if (!user) { setProfilePhoto(null); return }
+    getDoc(doc(db, 'users', user.uid)).then(snap => {
+      if (snap.exists()) setProfilePhoto(snap.data().photoURL || null)
+    })
+  }, [user])
 
   return (
     <nav style={{
@@ -87,8 +107,8 @@ export default function Navbar() {
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(201,168,76,0.15)'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.5)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'rgba(201,168,76,0.08)'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.25)' }}>
-                  {user.photoURL
-                    ? <img src={user.photoURL} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />
+                  {(profilePhoto || user.photoURL)
+                    ? <img src={profilePhoto || user.photoURL} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
                     : <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#000', fontWeight: 700 }}>
                         {user.displayName?.[0] || 'U'}
                       </div>

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   collection, addDoc, query, where,
-  orderBy, onSnapshot, Timestamp, getCountFromServer
+  orderBy, onSnapshot, Timestamp, getCountFromServer,
+  doc, getDoc
 } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useAuth } from '../context/AuthContext'
@@ -30,9 +31,18 @@ export default function Dashboard() {
   const [form, setForm] = useState({
     title: '', genre: '', poem: '', note: '',
   })
+  const [profile, setProfile] = useState(null)
 
   // Redirect if not logged in
   useEffect(() => { if (!user) navigate('/') }, [user, navigate])
+
+  // Load profile from Firestore to get Cloudinary photo
+  useEffect(() => {
+    if (!user) return
+    getDoc(doc(db, 'users', user.uid)).then(snap => {
+      if (snap.exists()) setProfile(snap.data())
+    })
+  }, [user])
 
   // Real-time listener for user's poems
   useEffect(() => {
@@ -143,15 +153,15 @@ export default function Dashboard() {
       }}>
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            {user.photoURL
-              ? <img src={user.photoURL} alt="" style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid rgba(201,168,76,0.4)' }} />
+            {(profile?.photoURL || user.photoURL)
+              ? <img src={profile?.photoURL || user.photoURL} alt="" style={{ width: 52, height: 52, borderRadius: '50%', border: '2px solid rgba(201,168,76,0.4)', objectFit: 'cover', boxShadow: '0 0 20px rgba(201,168,76,0.3)' }} />
               : <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(201,168,76,0.15)', border: '2px solid rgba(201,168,76,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Cormorant Garamond,serif', fontSize: 22, color: '#c9a84c', fontWeight: 700 }}>
-                  {user.displayName?.[0] || 'U'}
+                  {(profile?.displayName || user.displayName)?.[0] || 'U'}
                 </div>
             }
             <div>
               <p className="font-accent text-xs tracking-widest mb-1" style={{ color: 'rgba(201,168,76,0.5)' }}>WELCOME BACK</p>
-              <h1 className="font-display text-2xl font-bold" style={{ color: '#fff' }}>{user.displayName}</h1>
+              <h1 className="font-display text-2xl font-bold" style={{ color: '#fff' }}>{profile?.displayName || user.displayName}</h1>
               <p className="font-body text-sm" style={{ color: 'rgba(232,213,163,0.4)' }}>{user.email}</p>
             </div>
           </div>

@@ -3,9 +3,6 @@ import { Link, useLocation } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useAuth } from '../context/AuthContext'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebase/config'
-import { useState, useEffect } from 'react'
 import logoImg from '../assets/logo.jpg'
 
 const NAV = [

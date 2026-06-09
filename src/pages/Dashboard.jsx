@@ -263,12 +263,54 @@ export default function Dashboard() {
                         </div>
                       )}
 
-                      {/* Approval message */}
+                      {/* Approval message + judge score + review */}
                       {poem.status === 'approved' && (
-                        <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(39,174,96,0.08)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 2 }}>
-                          <p className="font-body text-sm" style={{ color: 'rgba(39,174,96,0.8)' }}>
-                            🎉 Congratulations! Your poem has been approved and is in the competition.
-                          </p>
+                        <div style={{ marginTop: 12 }}>
+                          <div style={{ padding: '10px 14px', background: 'rgba(39,174,96,0.08)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 2, marginBottom: 10 }}>
+                            <p className="font-body text-sm" style={{ color: 'rgba(39,174,96,0.8)' }}>
+                              🎉 Congratulations! Your poem has been approved and is in the competition.
+                            </p>
+                          </div>
+
+                          {/* Judge score */}
+                          {poem.judgeScore > 0 && (
+                            <div style={{ padding: '16px 20px', background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 2, marginBottom: 10 }}>
+                              <p className="font-accent text-xs tracking-widest mb-2" style={{ color: 'rgba(201,168,76,0.5)' }}>JUDGE'S SCORE</p>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                {/* Score circle */}
+                                <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+                                  <svg width="64" height="64" viewBox="0 0 64 64" style={{ transform: 'rotate(-90deg)' }}>
+                                    <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(201,168,76,0.15)" strokeWidth="5" />
+                                    <circle cx="32" cy="32" r="26" fill="none" stroke="#c9a84c" strokeWidth="5"
+                                      strokeDasharray={`${2 * Math.PI * 26}`}
+                                      strokeDashoffset={`${2 * Math.PI * 26 * (1 - (poem.judgeScore || 0) / 100)}`}
+                                      strokeLinecap="round"
+                                      style={{ transition: 'stroke-dashoffset 1s ease' }}
+                                    />
+                                  </svg>
+                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <span style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 700, fontSize: 16, color: '#c9a84c' }}>{poem.judgeScore}</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p style={{ fontFamily: 'Cormorant Garamond,serif', fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 2 }}>
+                                    {poem.judgeScore >= 85 ? 'Outstanding' : poem.judgeScore >= 70 ? 'Excellent' : poem.judgeScore >= 55 ? 'Good' : 'Developing'}
+                                  </p>
+                                  <p style={{ fontFamily: 'EB Garamond,serif', fontSize: 13, color: 'rgba(232,213,163,0.4)' }}>
+                                    out of 100 · counts as 70% of final score
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Judge review/note */}
+                          {poem.adminNote && (
+                            <div style={{ padding: '14px 18px', background: 'rgba(201,168,76,0.04)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: 2 }}>
+                              <p className="font-accent text-xs tracking-widest mb-2" style={{ color: 'rgba(201,168,76,0.5)' }}>JUDGE'S REVIEW</p>
+                              <p style={{ fontFamily: 'EB Garamond,serif', fontSize: 16, color: 'rgba(232,213,163,0.7)', lineHeight: 1.8, fontStyle: 'italic' }}>"{poem.adminNote}"</p>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

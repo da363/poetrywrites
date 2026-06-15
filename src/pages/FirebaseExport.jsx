@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function FirebaseExport() {
   const [apiKey, setApiKey] = useState("");
@@ -10,6 +10,35 @@ export default function FirebaseExport() {
   const [fetched, setFetched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [isDocxReady, setIsDocxReady] = useState(false);
+
+  // Properly load docx library (fixes the "window.docx is undefined" error)
+  useEffect(() => {
+    if (window.docx) {
+      setIsDocxReady(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js";
+    script.async = true;
+
+    script.onload = () => {
+      setIsDocxReady(true);
+    };
+
+    script.onerror = () => {
+      setError("Failed to load document export library. Please refresh the page.");
+    };
+
+    document.body.appendChild(script);
+
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
 
   async function firestoreGet(col) {
     const cleanProjectId = projectId.trim();
@@ -66,6 +95,11 @@ export default function FirebaseExport() {
   }
 
   async function exportDoc() {
+    if (!window.docx) {
+      setError("Document library not ready yet. Please wait a few seconds and try again.");
+      return;
+    }
+
     setExporting(true); setError(""); setLog("Building document...");
     try {
       const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
@@ -184,8 +218,6 @@ export default function FirebaseExport() {
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", maxWidth: 600, margin: "0 auto", padding: 24, background: "#000", minHeight: "100vh", color: "#fff" }}>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js" />
-
       <h2 style={{ fontFamily: "Cinzel, serif", color: "#c9a84c", letterSpacing: "0.15em", fontSize: 18, marginBottom: 8 }}>DATA EXPORT</h2>
       <p style={{ color: "rgba(232,213,163,0.5)", fontSize: 13, marginBottom: 24 }}>Enter your Firebase config to fetch and export all users and poems.</p>
 
@@ -222,14 +254,40 @@ export default function FirebaseExport() {
             ))}
           </div>
 
-          <button onClick={exportDoc} disabled={exporting} style={{ width: "100%", padding: "11px", background: "#c9a84c", border: "none", borderRadius: 2, color: "#000", fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", cursor: exporting ? "not-allowed" : "pointer", opacity: exporting ? 0.6 : 1 }}>
-            {exporting ? "BUILDING DOCUMENT..." : "DOWNLOAD WORD DOCUMENT"}
+          <button 
+            onClick={exportDoc} 
+            disabled={exporting || !isDocxReady} 
+            style={{ 
+              width: "100%", 
+              padding: "11px", 
+              background: isDocxReady ? "#c9a84c" : "rgba(201,168,76,0.3)", 
+              border: "none", 
+              borderRadius: 2, 
+              color: "#000", 
+              fontSize: 12, 
+              fontWeight: 700, 
+              letterSpacing: "0.15em", 
+              cursor: (exporting || !isDocxReady) ? "not-allowed" : "pointer", 
+              opacity: (exporting || !isDocxReady) ? 0.6 : 1 
+            }}
+          >
+            {!isDocxReady 
+              ? "LOADING DOCUMENT LIBRARY..." 
+              : exporting 
+                ? "BUILDING DOCUMENT..." 
+                : "DOWNLOAD WORD DOCUMENT"}
           </button>
         </>
       )}
 
       {log && <p style={{ fontSize: 13, color: "rgba(201,168,76,0.6)", marginTop: 10 }}>{log}</p>}
       {error && <p style={{ fontSize: 13, color: "#e74c3c", marginTop: 10 }}>{error}</p>}
+
+      {!isDocxReady && (
+        <p style={{ fontSize: 12, color: "rgba(201,168,76,0.5)", marginTop: 16, textAlign: "center" }}>
+          Loading document export library...
+        </p>
+      )}
     </div>
   );
 }

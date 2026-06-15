@@ -14,30 +14,28 @@ export default function FirebaseExport() {
 
   // Properly load docx library (fixes the "window.docx is undefined" error)
   useEffect(() => {
-    if (window.docx) {
+    if (typeof window !== "undefined" && window.docx) {
       setIsDocxReady(true);
       return;
     }
 
     const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js";
+    script.src = "https://unpkg.com/docx@8.5.0/build/index.umd.js";
     script.async = true;
 
     script.onload = () => {
-      setIsDocxReady(true);
+      if (window.docx) {
+        setIsDocxReady(true);
+      } else {
+        setError("DOCX library loaded incorrectly.");
+      }
     };
 
     script.onerror = () => {
-      setError("Failed to load document export library. Please refresh the page.");
+      setError("Failed to load DOCX library.");
     };
 
     document.body.appendChild(script);
-
-    return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
   }, []);
 
   async function firestoreGet(col) {
@@ -95,6 +93,11 @@ export default function FirebaseExport() {
   }
 
   async function exportDoc() {
+    if (!users.length && !poems.length) {
+      setError("No data available to export.");
+      return;
+    }
+
     if (!window.docx) {
       setError("Document library not ready yet. Please wait a few seconds and try again.");
       return;
@@ -203,11 +206,27 @@ export default function FirebaseExport() {
       });
 
       const blob = await Packer.toBlob(doc);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `competition-export-${new Date().toISOString().slice(0, 10)}.docx`;
-      a.click(); URL.revokeObjectURL(url);
-      setLog("Downloaded successfully.");
+
+      const fileName = `competition-export-${new Date().toISOString().slice(0, 10)}.docx`;
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+      link.style.display = "none";
+
+      document.body.appendChild(link);
+
+      setTimeout(() => {
+        link.click();
+
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+      }, 100);
+
+      setLog(`Downloaded ${fileName} successfully.`);
     } catch (e) {
       setError("Export failed: " + e.message); setLog("");
     }

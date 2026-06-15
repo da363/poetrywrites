@@ -4,6 +4,7 @@ import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import { Home, About, Competition, Prizes, Terms, Contact } from './pages/PublicPages.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import FirebaseExport from './pages/FirebaseExport.jsx'
 import Admin from './pages/Admin.jsx'
 import Voting from './pages/VotingPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
@@ -74,6 +75,12 @@ function AppRoutes() {
           <Layout><Admin /></Layout>
         </AdminRoute>
       } />
+
+       <Route path="/export" element={
+         <AdminRoute>
+         <FirebaseExport />
+         </AdminRoute>
+}       />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />

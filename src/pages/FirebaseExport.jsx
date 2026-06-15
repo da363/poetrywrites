@@ -12,7 +12,10 @@ export default function FirebaseExport() {
   const [exporting, setExporting] = useState(false);
 
   async function firestoreGet(col) {
-    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${col}?key=${apiKey}&pageSize=500`;
+    const cleanProjectId = projectId.trim();
+    const cleanApiKey = apiKey.trim();
+
+    const url = `https://firestore.googleapis.com/v1/projects/${cleanProjectId}/databases/(default)/documents/${col}?key=${cleanApiKey}&pageSize=500`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Firestore error ${res.status}: ${await res.text()}`);
     const data = await res.json();
@@ -34,7 +37,10 @@ export default function FirebaseExport() {
 
   async function fetchData() {
     setError(""); setLog(""); setFetched(false);
-    if (!projectId.trim() || !apiKey.trim()) {
+    const cleanProjectId = projectId.trim();
+    const cleanApiKey = apiKey.trim();
+
+    if (!cleanProjectId || !cleanApiKey) {
       setError("Please fill in both API Key and Project ID.");
       return;
     }
@@ -185,10 +191,20 @@ export default function FirebaseExport() {
 
       <div style={{ background: "rgba(201,168,76,0.05)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 4, padding: 20, marginBottom: 16 }}>
         <label style={{ display: "block", fontSize: 11, letterSpacing: "0.12em", color: "rgba(201,168,76,0.6)", marginBottom: 4 }}>API KEY</label>
-        <input value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="AIzaSy..." style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 2, padding: "8px 10px", color: "#fff", fontSize: 13, boxSizing: "border-box", marginBottom: 12 }} />
+        <input 
+          value={apiKey} 
+          onChange={e => setApiKey(e.target.value)} 
+          placeholder="AIzaSy..." 
+          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 2, padding: "8px 10px", color: "#fff", fontSize: 13, boxSizing: "border-box", marginBottom: 12 }} 
+        />
 
         <label style={{ display: "block", fontSize: 11, letterSpacing: "0.12em", color: "rgba(201,168,76,0.6)", marginBottom: 4 }}>PROJECT ID</label>
-        <input value={projectId} onChange={e => setProjectId(e.target.value)} placeholder="your-project-id" style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 2, padding: "8px 10px", color: "#fff", fontSize: 13, boxSizing: "border-box" }} />
+        <input 
+          value={projectId} 
+          onChange={e => setProjectId(e.target.value)} 
+          placeholder="your-project-id" 
+          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 2, padding: "8px 10px", color: "#fff", fontSize: 13, boxSizing: "border-box" }} 
+        />
       </div>
 
       <button onClick={fetchData} disabled={loading} style={{ width: "100%", padding: "11px", background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: 2, color: "#c9a84c", fontSize: 12, letterSpacing: "0.15em", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, marginBottom: 8 }}>

@@ -56,7 +56,7 @@ export default function Footer() {
                 { icon: '📸', label: 'Poetrywrites1804', href: 'https://www.instagram.com/poetrywrites1804' },
                 { icon: '📘', label: 'Calliope writes',  href: 'https://www.facebook.com/calliopewrites' },
                 { icon: '✉️', label: 'poetrywrites1804@gmail.com', href: 'mailto:poetrywrites1804@gmail.com' },
-                { icon: '📞', label: '09043334201', href: 'tel:+2349043334201' },
+                { icon: '📞', label: '09043334201', href: 'tel:+2349043334210' },
               ].map(({ icon, label, href }) => (
                 <a key={label} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noreferrer"
                   style={{ display: 'flex', gap: 10, alignItems: 'center', textDecoration: 'none', fontFamily: 'EB Garamond,serif', fontSize: 14, color: 'rgba(232,213,163,0.45)', transition: 'color 0.2s' }}

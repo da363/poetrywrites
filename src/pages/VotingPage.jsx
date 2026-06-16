@@ -3,7 +3,7 @@ import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestor
 import { db } from '../firebase/config'
 import { useAuth } from '../context/AuthContext'
 
-const VOTENAIJA_LINK = 'https://poetrywrites-test-run.votenaija.ng'
+const VOTENAIJA_LINK = 'https://poetrywrites-rising-voices.votenaija.ng'
 
 const PACKAGES = [
   { id: 'bronze', label: 'Bronze', votes: 10,  amount: 500,  color: '#CD7F32', glow: 'rgba(205,127,50,0.3)',  icon: '🥉' },

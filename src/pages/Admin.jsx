@@ -26,6 +26,7 @@ export default function Admin() {
   const [updating,   setUpdating]   = useState(false)
   const [expanded,   setExpanded]   = useState(null)
   const [judgeScore, setJudgeScore] = useState('')
+  const [voteCount,  setVoteCount]  = useState('')
 
   // Guard — only admin
   useEffect(() => {
@@ -63,10 +64,14 @@ export default function Admin() {
         const score = Math.min(100, Math.max(0, Number(judgeScore)))
         updateData.judgeScore = score
       }
+      if (voteCount !== '' && !isNaN(Number(voteCount))) {
+        updateData.votes = Math.max(0, parseInt(voteCount))
+      }
       await updateDoc(doc(db, 'poems', poemId), updateData)
       setSelected(null)
       setAdminNote('')
       setJudgeScore('')
+      setVoteCount('')
     } catch (err) {
       alert('Update failed: ' + err.message)
     } finally {
@@ -210,7 +215,7 @@ export default function Admin() {
                           </button>
                         )}
                         {poem.status !== 'pending' && (
-                          <button onClick={() => { setSelected(poem); setAdminNote(poem.adminNote || '') }}
+                          <button onClick={() => { setSelected(poem); setAdminNote(poem.adminNote || ''); setJudgeScore(poem.judgeScore !== undefined ? String(poem.judgeScore) : ''); setVoteCount(poem.votes !== undefined ? String(poem.votes) : '') }}
                             style={{ background: 'none', border: '1px solid rgba(232,213,163,0.1)', borderRadius: 2, padding: '6px 12px', cursor: 'pointer', fontFamily: 'Cinzel,serif', fontSize: 9, letterSpacing: '0.1em', color: 'rgba(232,213,163,0.4)' }}>
                             CHANGE
                           </button>
@@ -240,7 +245,7 @@ export default function Admin() {
                       <p className="font-accent text-xs tracking-widest mb-3" style={{ color: '#c9a84c' }}>
                         REVIEWING: "{poem.title}"
                       </p>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                         <div>
                           <label className="label-gold">Note to Poet (optional)</label>
                           <textarea className="input-gold" rows={3}
@@ -259,6 +264,17 @@ export default function Admin() {
                           />
                           <p style={{ fontFamily:'EB Garamond,serif', fontSize:12, color:'rgba(232,213,163,0.3)', marginTop:6 }}>
                             Counts as 70% of final score
+                          </p>
+                        </div>
+                        <div>
+                          <label className="label-gold">VoteNaija Votes</label>
+                          <input className="input-gold" type="number" min="0"
+                            placeholder="e.g. 320"
+                            value={voteCount}
+                            onChange={e => setVoteCount(e.target.value)}
+                          />
+                          <p style={{ fontFamily:'EB Garamond,serif', fontSize:12, color:'rgba(232,213,163,0.3)', marginTop:6 }}>
+                            Counts as 30% of final score (normalised against highest votes)
                           </p>
                         </div>
                       </div>

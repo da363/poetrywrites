@@ -3,7 +3,8 @@ import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestor
 import { db } from '../firebase/config'
 import { useAuth } from '../context/AuthContext'
 
-const VOTENAIJA_LINK = 'https://poetrywrites-rising-voices.votenaija.ng'
+const VOTENAIJA_LINK  = 'https://poetrywrites-rising-voices.votenaija.ng'
+const VOTING_DEADLINE = new Date('2026-06-28T23:59:59+01:00')
 
 const PACKAGES = [
   { id: 'bronze', label: 'Bronze', votes: 10,  amount: 500,  color: '#CD7F32', glow: 'rgba(205,127,50,0.3)',  icon: '🥉' },
@@ -30,6 +31,25 @@ export default function VotingPage() {
   const [selected, setSelected] = useState(null)
   const [tab,      setTab]      = useState('vote')
   const barRef = useRef(null)
+  const [timeLeft, setTimeLeft] = useState(null)
+
+  // Countdown timer
+  useEffect(() => {
+    function calc() {
+      const diff = VOTING_DEADLINE - new Date()
+      if (diff <= 0) { setTimeLeft(null); return }
+      const d = Math.floor(diff / 86400000)
+      const h = Math.floor((diff % 86400000) / 3600000)
+      const m = Math.floor((diff % 3600000) / 60000)
+      const s = Math.floor((diff % 60000) / 1000)
+      setTimeLeft({ d, h, m, s })
+    }
+    calc()
+    const id = setInterval(calc, 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const votingOpen = timeLeft !== null
 
   // Scroll progress
   useEffect(() => {
@@ -80,15 +100,36 @@ export default function VotingPage() {
           <h1 style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 700, fontSize: 'clamp(36px,7vw,68px)', color: '#fff', marginBottom: 10 }}>
             Vote & <span className="gold-text" style={{ fontStyle: 'italic' }}>Leaderboard</span>
           </h1>
-          <p style={{ fontFamily: 'EB Garamond,serif', fontSize: 17, color: 'rgba(232,213,163,0.5)', maxWidth: 480, margin: '0 auto 28px' }}>
+          <p style={{ fontFamily: 'EB Garamond,serif', fontSize: 17, color: 'rgba(232,213,163,0.5)', maxWidth: 480, margin: '0 auto 20px' }}>
             Support your favourite poets. Votes count for <strong style={{ color: '#f0d080' }}>30%</strong> of the final score.
           </p>
-          {/* VoteNaija CTA */}
-          <a href={VOTENAIJA_LINK} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-            <button className="btn-gold magnetic" style={{ fontSize: 12, padding: '14px 40px' }}>
-              🗳 Vote
-            </button>
-          </a>
+
+          {votingOpen ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
+                {[['d','DAYS'],['h','HRS'],['m','MIN'],['s','SEC']].map(([key, label]) => (
+                  <div key={key} style={{ textAlign: 'center', minWidth: 64, padding: '12px 16px', background: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 2 }}>
+                    <div style={{ fontFamily: 'Cormorant Garamond,serif', fontWeight: 700, fontSize: 32, color: '#f0d080', lineHeight: 1 }}>
+                      {String(timeLeft[key]).padStart(2, '0')}
+                    </div>
+                    <div style={{ fontFamily: 'Cinzel,serif', fontSize: 8, letterSpacing: '0.2em', color: 'rgba(201,168,76,0.45)', marginTop: 4 }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+              <a href={VOTENAIJA_LINK} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                <button className="btn-gold magnetic" style={{ fontSize: 12, padding: '14px 40px' }}>🗳 Vote Now</button>
+              </a>
+            </>
+          ) : (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ display: 'inline-block', padding: '14px 32px', background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 2, marginBottom: 12 }}>
+                <p style={{ fontFamily: 'Cinzel,serif', fontSize: 11, letterSpacing: '0.2em', color: '#e74c3c', margin: 0 }}>🔒 VOTING HAS CLOSED</p>
+              </div>
+              <p style={{ fontFamily: 'EB Garamond,serif', fontSize: 15, color: 'rgba(232,213,163,0.35)', margin: 0 }}>
+                Thank you to everyone who voted. Check the leaderboard for final standings.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -170,9 +211,13 @@ export default function VotingPage() {
                           <button onClick={() => setSelected(isOpen ? null : poem.id)} style={{ background: isOpen ? 'rgba(201,168,76,0.1)' : 'none', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 2, padding: '8px 16px', cursor: 'pointer', fontFamily: 'Cinzel,serif', fontSize: 9, letterSpacing: '0.1em', color: '#c9a84c', transition: 'all 0.3s' }}>
                             {isOpen ? 'CLOSE' : 'DETAILS'}
                           </button>
-                          <a href={VOTENAIJA_LINK} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                            <button className="btn-gold" style={{ padding: '8px 18px', fontSize: 9 }}>🗳 VOTE</button>
-                          </a>
+                          {votingOpen ? (
+                            <a href={VOTENAIJA_LINK} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                              <button className="btn-gold" style={{ padding: '8px 18px', fontSize: 9 }}>🗳 VOTE</button>
+                            </a>
+                          ) : (
+                            <div style={{ padding: '8px 14px', background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 2, fontFamily: 'Cinzel,serif', fontSize: 8, letterSpacing: '0.1em', color: 'rgba(231,76,60,0.6)' }}>CLOSED</div>
+                          )}
                         </div>
                       </div>
 
@@ -183,9 +228,13 @@ export default function VotingPage() {
                             {poem.poem}
                           </p>
                           <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
-                            <a href={VOTENAIJA_LINK} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                              <button className="btn-gold magnetic" style={{ padding: '10px 24px', fontSize: 10 }}>🗳 Vote for This Poem</button>
-                            </a>
+                            {votingOpen ? (
+                              <a href={VOTENAIJA_LINK} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                                <button className="btn-gold magnetic" style={{ padding: '10px 24px', fontSize: 10 }}>🗳 Vote for This Poem</button>
+                              </a>
+                            ) : (
+                              <div style={{ padding: '10px 20px', background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 2, fontFamily: 'Cinzel,serif', fontSize: 9, letterSpacing: '0.15em', color: 'rgba(231,76,60,0.6)' }}>🔒 VOTING CLOSED</div>
+                            )}
                           </div>
                         </div>
                       )}

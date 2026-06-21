@@ -11,6 +11,17 @@ export default function PoemExport() {
   const [loading,   setLoading]   = useState(false)
   const [exporting, setExporting] = useState(false)
 
+  function loadDocx() {
+    return new Promise((resolve, reject) => {
+      if (window.docx) { resolve(); return }
+      const s = document.createElement('script')
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js'
+      s.onload = resolve
+      s.onerror = () => reject(new Error('Failed to load docx library'))
+      document.head.appendChild(s)
+    })
+  }
+
   async function fetchData() {
     setError(''); setLog(''); setFetched(false)
     setLoading(true)
@@ -38,8 +49,8 @@ export default function PoemExport() {
   const filtered = poems.filter(p => filter === 'all' || p.status === filter)
 
   async function exportDoc() {
-    if (!window.docx) { setError('docx library not loaded yet — try again in a moment.'); return }
     setExporting(true); setError(''); setLog('Building document...')
+    try { await loadDocx() } catch(e) { setError('Failed to load docx library: ' + e.message); setExporting(false); return }
 
     try {
       const { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle } = window.docx
@@ -174,7 +185,6 @@ export default function PoemExport() {
 
   return (
     <>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js" />
       <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: 620, margin: '0 auto', padding: 24, background: '#000', minHeight: '100vh', color: '#fff' }}>
 
         <h2 style={{ fontFamily: 'Cinzel, serif', color: '#c9a84c', letterSpacing: '0.15em', fontSize: 18, marginBottom: 6 }}>POEM EXPORT</h2>

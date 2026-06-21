@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db } from '../firebase/config'
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle } from 'docx'
 
 export default function PoemExport() {
   const [poems,     setPoems]     = useState([])
@@ -10,17 +11,6 @@ export default function PoemExport() {
   const [fetched,   setFetched]   = useState(false)
   const [loading,   setLoading]   = useState(false)
   const [exporting, setExporting] = useState(false)
-
-  function loadDocx() {
-    return new Promise((resolve, reject) => {
-      if (window.docx) { resolve(); return }
-      const s = document.createElement('script')
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js'
-      s.onload = resolve
-      s.onerror = () => reject(new Error('Failed to load docx library'))
-      document.head.appendChild(s)
-    })
-  }
 
   async function fetchData() {
     setError(''); setLog(''); setFetched(false)
@@ -50,11 +40,8 @@ export default function PoemExport() {
 
   async function exportDoc() {
     setExporting(true); setError(''); setLog('Building document...')
-    try { await loadDocx() } catch(e) { setError('Failed to load docx library: ' + e.message); setExporting(false); return }
 
     try {
-      const { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle } = window.docx
-
       const gap  = () => new Paragraph({ children: [new TextRun('')] })
       const rule = () => new Paragraph({
         border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'C9A84C', space: 1 } },

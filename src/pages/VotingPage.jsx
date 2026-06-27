@@ -80,8 +80,8 @@ export default function VotingPage() {
       const maxVotes   = Math.max(...poems.map(x => x.votes || 0), 1)
       const voteScore  = ((p.votes || 0) / maxVotes) * 100
       const judgeScore = p.judgeScore || 0
-      const total      = (judgeScore * 0.7 + voteScore * 0.3).toFixed(1)
-      return { ...p, voteScore: voteScore.toFixed(1), total }
+      const total      = judgeScore * 0.7 + voteScore * 0.3
+      return { ...p, voteScore: voteScore.toFixed(1), total: parseFloat(total.toFixed(1)) }
     })
     .sort((a, b) => b.total - a.total)
 
